@@ -4,8 +4,14 @@ import { AuctionsController } from './auctions.controller';
 import { AuctionsService } from './auctions.service';
 import { AUCTIONS_REPOSITORY } from '../../shared/repositories/auctions.repository';
 import { MongoDbAuctionsRepository } from '../../shared/repositories/mongodb-auctions.repository';
-import { AuctionDocument, AuctionSchema } from '../../shared/database/schemas/auction.schema';
-import { BidDocument, BidSchema } from '../../shared/database/schemas/bid.schema';
+import {
+  AuctionDocument,
+  AuctionSchema,
+} from '../../shared/database/schemas/auction.schema';
+import {
+  BidDocument,
+  BidSchema,
+} from '../../shared/database/schemas/bid.schema';
 
 @Module({
   imports: [

@@ -30,7 +30,10 @@ export class MongoDbAuctionsRepository implements AuctionsRepository {
 
   async listAuctions(categoryId?: string): Promise<AuctionEntity[]> {
     const filter = categoryId ? { categoryId } : {};
-    const auctions = await this.auctionModel.find(filter).sort({ createdAt: -1 }).exec();
+    const auctions = await this.auctionModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .exec();
 
     return auctions.map((auction) => this.mapAuction(auction));
   }
@@ -40,7 +43,9 @@ export class MongoDbAuctionsRepository implements AuctionsRepository {
     return auction ? this.mapAuction(auction) : null;
   }
 
-  async createBid(input: Omit<BidEntity, 'id' | 'createdAt'>): Promise<BidEntity> {
+  async createBid(
+    input: Omit<BidEntity, 'id' | 'createdAt'>,
+  ): Promise<BidEntity> {
     const created = await this.bidModel.create(input);
     return this.mapBid(created);
   }
@@ -54,7 +59,10 @@ export class MongoDbAuctionsRepository implements AuctionsRepository {
     return bids.map((bid) => this.mapBid(bid));
   }
 
-  async updateCurrentPrice(auctionId: string, amount: number): Promise<AuctionEntity | null> {
+  async updateCurrentPrice(
+    auctionId: string,
+    amount: number,
+  ): Promise<AuctionEntity | null> {
     const updated = await this.auctionModel
       .findByIdAndUpdate(
         auctionId,
@@ -69,7 +77,9 @@ export class MongoDbAuctionsRepository implements AuctionsRepository {
     return updated ? this.mapAuction(updated) : null;
   }
 
-  private mapAuction(auction: AuctionDocument & { _id: { toString(): string } }): AuctionEntity {
+  private mapAuction(
+    auction: AuctionDocument & { _id: { toString(): string } },
+  ): AuctionEntity {
     return {
       id: auction._id.toString(),
       sellerId: auction.sellerId,
@@ -86,7 +96,9 @@ export class MongoDbAuctionsRepository implements AuctionsRepository {
     };
   }
 
-  private mapBid(bid: BidDocument & { _id: { toString(): string } }): BidEntity {
+  private mapBid(
+    bid: BidDocument & { _id: { toString(): string } },
+  ): BidEntity {
     return {
       id: bid._id.toString(),
       auctionId: bid.auctionId,

@@ -6,9 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import {
-  SOCKET_EVENTS,
-} from '../../shared/contracts/socket-events';
+import { SOCKET_EVENTS } from '../../shared/contracts/socket-events';
 import type {
   JoinAuctionPayload,
   LeaveAuctionPayload,
@@ -34,7 +32,7 @@ export class BidsGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: JoinAuctionPayload,
   ) {
-    client.join(payload.auctionId);
+    void client.join(payload.auctionId);
     return { event: SOCKET_EVENTS.JOIN_AUCTION, joined: true };
   }
 
@@ -43,7 +41,7 @@ export class BidsGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: LeaveAuctionPayload,
   ) {
-    client.leave(payload.auctionId);
+    void client.leave(payload.auctionId);
     return { event: SOCKET_EVENTS.LEAVE_AUCTION, left: true };
   }
 
