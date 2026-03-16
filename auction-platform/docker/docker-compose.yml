@@ -1,0 +1,54 @@
+services:
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    container_name: auction-frontend
+    env_file:
+      - ../frontend/.env.example
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    ports:
+      - '3001:3000'
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    container_name: auction-backend
+    env_file:
+      - ../backend/.env.example
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo:7
+    container_name: auction-mongo
+    environment:
+      MONGO_INITDB_DATABASE: auction_platform
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+      - ../infrastructure/mongodb/init.js:/docker-entrypoint-initdb.d/init.js:ro
+
+  redis:
+    image: redis:7-alpine
+    container_name: auction-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_data:
+  redis_data:
