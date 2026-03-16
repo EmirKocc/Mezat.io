@@ -9,7 +9,7 @@ export class InMemoryAuctionsRepository implements AuctionsRepository {
   private readonly auctions = new Map<string, AuctionEntity>();
   private readonly bids = new Map<string, BidEntity[]>();
 
-  async createAuction(
+  createAuction(
     input: Omit<AuctionEntity, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<AuctionEntity> {
     const now = new Date().toISOString();
@@ -21,22 +21,22 @@ export class InMemoryAuctionsRepository implements AuctionsRepository {
     };
     this.auctions.set(auction.id, auction);
     this.bids.set(auction.id, []);
-    return auction;
+    return Promise.resolve(auction);
   }
 
-  async listAuctions(categoryId?: string): Promise<AuctionEntity[]> {
+  listAuctions(categoryId?: string): Promise<AuctionEntity[]> {
     const all = Array.from(this.auctions.values());
     if (!categoryId) {
-      return all;
+      return Promise.resolve(all);
     }
-    return all.filter((auction) => auction.categoryId === categoryId);
+    return Promise.resolve(all.filter((auction) => auction.categoryId === categoryId));
   }
 
-  async findAuctionById(auctionId: string): Promise<AuctionEntity | null> {
-    return this.auctions.get(auctionId) ?? null;
+  findAuctionById(auctionId: string): Promise<AuctionEntity | null> {
+    return Promise.resolve(this.auctions.get(auctionId) ?? null);
   }
 
-  async createBid(input: Omit<BidEntity, 'id' | 'createdAt'>): Promise<BidEntity> {
+  createBid(input: Omit<BidEntity, 'id' | 'createdAt'>): Promise<BidEntity> {
     const bid: BidEntity = {
       ...input,
       id: randomUUID(),
@@ -45,17 +45,17 @@ export class InMemoryAuctionsRepository implements AuctionsRepository {
     const auctionBids = this.bids.get(input.auctionId) ?? [];
     auctionBids.push(bid);
     this.bids.set(input.auctionId, auctionBids);
-    return bid;
+    return Promise.resolve(bid);
   }
 
-  async listAuctionBids(auctionId: string): Promise<BidEntity[]> {
-    return this.bids.get(auctionId) ?? [];
+  listAuctionBids(auctionId: string): Promise<BidEntity[]> {
+    return Promise.resolve(this.bids.get(auctionId) ?? []);
   }
 
-  async updateCurrentPrice(auctionId: string, amount: number): Promise<AuctionEntity | null> {
+  updateCurrentPrice(auctionId: string, amount: number): Promise<AuctionEntity | null> {
     const auction = this.auctions.get(auctionId);
     if (!auction) {
-      return null;
+      return Promise.resolve(null);
     }
 
     const updated: AuctionEntity = {
@@ -64,6 +64,6 @@ export class InMemoryAuctionsRepository implements AuctionsRepository {
       updatedAt: new Date().toISOString(),
     };
     this.auctions.set(auctionId, updated);
-    return updated;
+    return Promise.resolve(updated);
   }
 }

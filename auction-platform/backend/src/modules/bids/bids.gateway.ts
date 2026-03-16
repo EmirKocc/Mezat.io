@@ -34,7 +34,7 @@ export class BidsGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: JoinAuctionPayload,
   ) {
-    client.join(payload.auctionId);
+    void client.join(payload.auctionId);
     return { event: SOCKET_EVENTS.JOIN_AUCTION, joined: true };
   }
 
@@ -43,7 +43,7 @@ export class BidsGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: LeaveAuctionPayload,
   ) {
-    client.leave(payload.auctionId);
+    void client.leave(payload.auctionId);
     return { event: SOCKET_EVENTS.LEAVE_AUCTION, left: true };
   }
 
