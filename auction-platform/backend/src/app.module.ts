@@ -8,6 +8,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { UsersModule } from './modules/users/users.module';
 import configuration from './shared/config/configuration';
 import { MongoDbModule } from './shared/database/mongodb.module';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { MongoDbModule } from './shared/database/mongodb.module';
     PaymentsModule,
     LivestreamModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}

@@ -2,8 +2,10 @@ export default () => ({
   app: {
     name: process.env.APP_NAME ?? 'auction-platform-backend',
     env: process.env.NODE_ENV ?? 'development',
-    port: Number(process.env.PORT ?? 3000),
-    corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3001',
+    port: Number(process.env.PORT ?? 3002),
+    corsOrigin:
+      process.env.CORS_ORIGIN ??
+      'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
   },
   auth: {
     jwtSecret: process.env.JWT_SECRET ?? 'change-me-in-prod',
@@ -11,7 +13,7 @@ export default () => ({
     googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
   },
   database: {
-    mongodbUri: process.env.MONGODB_URI ?? 'mongodb://localhost:27017',
+    mongodbUri: process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017',
     mongodbDbName: process.env.MONGODB_DB_NAME ?? 'auction_platform',
   },
   redis: {
