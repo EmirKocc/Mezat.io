@@ -36,9 +36,7 @@ export class InMemoryAuctionsRepository implements AuctionsRepository {
     return Promise.resolve(this.auctions.get(auctionId) ?? null);
   }
 
-  createBid(
-    input: Omit<BidEntity, 'id' | 'createdAt'>,
-  ): Promise<BidEntity> {
+  createBid(input: Omit<BidEntity, 'id' | 'createdAt'>): Promise<BidEntity> {
     const bid: BidEntity = {
       ...input,
       id: randomUUID(),
@@ -54,10 +52,7 @@ export class InMemoryAuctionsRepository implements AuctionsRepository {
     return Promise.resolve(this.bids.get(auctionId) ?? []);
   }
 
-  updateCurrentPrice(
-    auctionId: string,
-    amount: number,
-  ): Promise<AuctionEntity | null> {
+  updateCurrentPrice(auctionId: string, amount: number): Promise<AuctionEntity | null> {
     const auction = this.auctions.get(auctionId);
     if (!auction) {
       return Promise.resolve(null);
