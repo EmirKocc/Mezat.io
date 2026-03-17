@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AUCTIONS_REPOSITORY } from '../../shared/repositories/auctions.repository';
 import type { AuctionsRepository } from '../../shared/repositories/auctions.repository';
 import { PlaceBidDto } from './dto/place-bid.dto';
@@ -11,7 +16,9 @@ export class BidsService {
   ) {}
 
   async placeBid(payload: PlaceBidDto) {
-    const auction = await this.auctionsRepository.findAuctionById(payload.auctionId);
+    const auction = await this.auctionsRepository.findAuctionById(
+      payload.auctionId,
+    );
 
     if (!auction) {
       throw new NotFoundException('Auction not found');

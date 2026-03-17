@@ -6,9 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import {
-  SOCKET_EVENTS,
-} from '../../shared/contracts/socket-events';
+import { SOCKET_EVENTS } from '../../shared/contracts/socket-events';
 import type {
   JoinAuctionPayload,
   LeaveAuctionPayload,
