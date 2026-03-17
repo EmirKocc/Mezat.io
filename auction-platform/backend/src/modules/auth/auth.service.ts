@@ -32,16 +32,19 @@ export class AuthService {
     }
 
     const passwordHash = await this.hashPassword(payload.password);
+    const roles = this.resolveRoles(payload);
     const created = await this.userModel.create({
       email,
       passwordHash,
-      role: payload.role,
+      roles,
+      activeRole: roles[0],
     });
 
     return {
       userId: this.getUserId(created as UserWithId),
       email: created.email,
-      role: created.role,
+      roles: created.roles,
+      activeRole: created.activeRole,
       accessToken: `mock-jwt-token-${randomUUID()}`,
       refreshToken: `mock-refresh-token-${randomUUID()}`,
     };
@@ -49,24 +52,34 @@ export class AuthService {
 
   async login(payload: LoginDto) {
     const email = payload.email.trim().toLowerCase();
-    const user = await this.userModel.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ email }).lean<UserWithId>().exec();
 
-    if (!user?.passwordHash) {
+    if (!user) {
       throw new UnauthorizedException('E-posta veya şifre hatalı.');
     }
 
-    const isValidPassword = await this.verifyPassword(
+    const isValidPassword = await this.verifyPasswordForUser(
+      user as UserWithId,
       payload.password,
-      user.passwordHash,
     );
     if (!isValidPassword) {
       throw new UnauthorizedException('E-posta veya şifre hatalı.');
     }
 
+    const userRoles = this.resolveUserRoles(user as UserWithId);
+    const activeRole = this.resolveActiveRole(user as UserWithId, userRoles);
+
+    if (!userRoles.includes(payload.role)) {
+      throw new UnauthorizedException(
+        'Bu hesap secilen role ile giris yapamaz.',
+      );
+    }
+
     return {
       userId: this.getUserId(user as UserWithId),
       email: user.email,
-      role: user.role,
+      roles: userRoles,
+      activeRole,
       accessToken: `mock-jwt-token-${randomUUID()}`,
       refreshToken: `mock-refresh-token-${randomUUID()}`,
     };
@@ -99,7 +112,72 @@ export class AuthService {
     return timingSafeEqual(hashedBuffer, suppliedBuffer);
   }
 
+  private async verifyPasswordForUser(
+    user: UserWithId,
+    password: string,
+  ): Promise<boolean> {
+    const legacyPassword = (user as unknown as { password?: string }).password;
+    const storedHash = user.passwordHash;
+
+    if (!storedHash && !legacyPassword) {
+      return false;
+    }
+
+    if (storedHash?.includes(':')) {
+      return this.verifyPassword(password, storedHash);
+    }
+
+    const legacyMatch = storedHash === password || legacyPassword === password;
+    if (!legacyMatch) {
+      return false;
+    }
+
+    // Legacy plain-text passwords are upgraded after a successful login.
+    const migratedHash = await this.hashPassword(password);
+    await this.userModel
+      .updateOne(
+        { _id: user._id },
+        { $set: { passwordHash: migratedHash } },
+      )
+      .exec();
+
+    return true;
+  }
+
   private getUserId(user: UserWithId): string {
     return user._id.toString();
+  }
+
+  private resolveUserRoles(user: UserWithId): Array<'buyer' | 'seller'> {
+    const roles = Array.isArray(user.roles) ? user.roles : [];
+    if (roles.includes('buyer') || roles.includes('seller')) {
+      return Array.from(new Set(roles)) as Array<'buyer' | 'seller'>;
+    }
+
+    const legacyRole = (user as unknown as { role?: 'buyer' | 'seller' }).role;
+    if (legacyRole === 'buyer' || legacyRole === 'seller') {
+      return [legacyRole];
+    }
+
+    if (user.activeRole === 'buyer' || user.activeRole === 'seller') {
+      return [user.activeRole];
+    }
+
+    return ['buyer'];
+  }
+
+  private resolveActiveRole(
+    user: UserWithId,
+    roles: Array<'buyer' | 'seller'>,
+  ): 'buyer' | 'seller' {
+    if (user.activeRole && roles.includes(user.activeRole)) {
+      return user.activeRole;
+    }
+
+    return roles[0] ?? 'buyer';
+  }
+
+  private resolveRoles(payload: RegisterDto): Array<'buyer' | 'seller'> {
+    return [payload.role];
   }
 }

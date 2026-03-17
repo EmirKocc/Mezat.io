@@ -12,8 +12,11 @@ export class UserDocument {
   @Prop({ required: false })
   passwordHash?: string;
 
+  @Prop({ required: true, type: [String], enum: ['buyer', 'seller'], default: ['buyer'] })
+  roles!: Array<'buyer' | 'seller'>;
+
   @Prop({ required: true, enum: ['buyer', 'seller'], default: 'buyer' })
-  role!: 'buyer' | 'seller';
+  activeRole!: 'buyer' | 'seller';
 
   @Prop({ required: false, unique: true, sparse: true })
   googleId?: string;
@@ -27,4 +30,4 @@ export class UserDocument {
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);
 
-UserSchema.index({ role: 1 });
+UserSchema.index({ roles: 1 });

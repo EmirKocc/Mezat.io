@@ -1,21 +1,60 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import type { Model } from 'mongoose';
+import { UserDocument } from '../../shared/database/schemas/user.schema';
 import { SelectRoleDto } from './dto/select-role.dto';
 
 @Injectable()
 export class UsersService {
-  getCurrentUser(userId: string) {
+  constructor(
+    @InjectModel(UserDocument.name)
+    private readonly userModel: Model<UserDocument>,
+  ) {}
+
+  async getCurrentUser(userId: string) {
+    const user = await this.userModel.findById(userId).lean();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     return {
-      id: userId,
-      email: 'user@example.com',
-      role: 'buyer',
+      id: user._id.toString(),
+      email: user.email,
+      roles: user.roles,
+      activeRole: user.activeRole,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 
-  selectRole(userId: string, payload: SelectRoleDto) {
+  async selectRole(userId: string, payload: SelectRoleDto) {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (payload.role !== user.activeRole) {
+      throw new BadRequestException(
+        'Bu hesap sabit role sahiptir. Farkli role gecis desteklenmiyor.',
+      );
+    }
+
     return {
-      id: userId,
-      role: payload.role,
-      updatedAt: new Date().toISOString(),
+      id: user.id,
+      roles: user.roles,
+      activeRole: user.activeRole,
+      updatedAt: user.updatedAt,
     };
+  }
+
+  async registerSellerProfile(userId: string) {
+    void userId;
+    throw new BadRequestException(
+      'Ayni hesap icin alici ve satici birlikte desteklenmiyor. Satici icin ayri hesap acin.',
+    );
   }
 }
